@@ -74,25 +74,20 @@ class PlayerCar {
         this.speed = Math.max(GAME_CONFIG.MIN_SPEED, Math.min(GAME_CONFIG.MAX_SPEED, this.speed));
         
         // Calculate RPM directly from speed (single gear ratio)
-        // At 4000 RPM = 120 km/h, so ratio is 120/4000 = 0.03 km/h per RPM
-        // RPM = speed / 0.03 + idle adjustment
-        // Or: RPM = (speed / 120) * 4000 + IDLE_RPM when speed > 0
-        const rpmFromSpeed = GAME_CONFIG.IDLE_RPM + (this.speed / 120) * (4000 - GAME_CONFIG.IDLE_RPM) * (4000 / (4000 - GAME_CONFIG.IDLE_RPM));
-        
-        // Simpler: linear relationship where 0 km/h = 800 RPM, 120 km/h = 4000 RPM, 240 km/h = 7200 RPM
-        // RPM = 800 + (speed * 26.67) approximately
-        this.targetRpm = GAME_CONFIG.IDLE_RPM + (this.speed * ((4000 - GAME_CONFIG.IDLE_RPM) / 120));
+        // At 3000 RPM = 120 km/h
+        // RPM = 800 + (speed * (3000 - 800) / 120) = 800 + (speed * 18.33)
+        this.targetRpm = GAME_CONFIG.IDLE_RPM + (this.speed * ((3000 - GAME_CONFIG.IDLE_RPM) / 120));
         
         // Add slight RPM boost when accelerating (engine working harder)
         if (this.isAccelerating && !this.isBraking) {
-            this.targetRpm += 400;
+            this.targetRpm += 300;
         }
         
         // Clamp RPM to max
         this.targetRpm = Math.min(this.targetRpm, GAME_CONFIG.MAX_RPM);
         
         // Smooth RPM transition
-        const rpmChangeRate = 2000 * dt; // RPM change per second
+        const rpmChangeRate = 1500 * dt; // RPM change per second
         if (this.rpm < this.targetRpm) {
             this.rpm = Math.min(this.targetRpm, this.rpm + rpmChangeRate);
         } else {

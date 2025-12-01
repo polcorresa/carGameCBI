@@ -24,9 +24,10 @@ class Game {
         this.finishLineActive = false; // Whether finish line has been triggered
         
         // Stats tracking
-        this.timeAbove5000Rpm = 0; // Time in ms spent above 5000 RPM
+        this.timeAbove3500Rpm = 0; // Time in ms spent above 3500 RPM
         this.hardBrakeCount = 0; // Number of hard brakes
         this.wasHardBraking = false; // Track if currently hard braking
+        this.raceTime = 0; // Total race time in ms
         
         // Timing
         this.lastTime = 0;
@@ -84,17 +85,36 @@ class Game {
     showWin() {
         this.overlay.classList.remove('hidden', 'lose');
         this.overlay.classList.add('win');
-        this.overlayTitle.textContent = 'YOU WIN!';
+        this.overlayTitle.textContent = 'RACE COMPLETE!';
         
-        // Format time above 5000 RPM
-        const secondsAbove5000 = (this.timeAbove5000Rpm / 1000).toFixed(1);
+        // Calculate score
+        const raceTimeSeconds = this.raceTime / 1000;
+        const timeAbove3500Seconds = this.timeAbove3500Rpm / 1000;
+        
+        // Base score: faster time = higher score (target ~60 seconds for good run)
+        // 10000 points for 30 seconds, decreasing as time increases
+        const baseScore = Math.max(0, Math.round(10000 - (raceTimeSeconds * 100)));
+        
+        // RPM penalty: -5 points per second above 3500 RPM
+        const rpmPenalty = Math.round(timeAbove3500Seconds * 5);
+        
+        // Crash penalty: -250 points per crash
+        const crashPenalty = this.crashCount * 250;
+        
+        // Hard brake penalty: -30 points per hard brake
+        const hardBrakePenalty = this.hardBrakeCount * 30;
+        
+        // Final score (minimum 0)
+        const finalScore = Math.max(0, baseScore - rpmPenalty - crashPenalty - hardBrakePenalty);
         
         this.overlayMessage.innerHTML = `
-            You completed ${GAME_CONFIG.TARGET_DISTANCE} km!<br><br>
-            <strong>Stats:</strong><br>
-            Crashes: ${this.crashCount}<br>
-            Time above 5000 RPM: ${secondsAbove5000}s<br>
-            Hard brakes: ${this.hardBrakeCount}
+            <strong>Time:</strong> ${raceTimeSeconds.toFixed(1)}s<br><br>
+            <strong>Score Breakdown:</strong><br>
+            Base score (speed): ${baseScore} pts<br>
+            RPM penalty (${timeAbove3500Seconds.toFixed(1)}s above 3500): -${rpmPenalty} pts<br>
+            Crash penalty (${this.crashCount} crashes): -${crashPenalty} pts<br>
+            Hard brake penalty (${this.hardBrakeCount} brakes): -${hardBrakePenalty} pts<br><br>
+            <strong style="font-size: 24px; color: #00ff00;">FINAL SCORE: ${finalScore}</strong>
         `;
         this.startBtn.textContent = 'PLAY AGAIN';
     }
@@ -107,9 +127,10 @@ class Game {
         this.crashCooldown = 0;
         this.finishLineY = -200;
         this.finishLineActive = false;
-        this.timeAbove5000Rpm = 0;
+        this.timeAbove3500Rpm = 0;
         this.hardBrakeCount = 0;
         this.wasHardBraking = false;
+        this.raceTime = 0;
         this.player.reset();
         this.obstacleManager.reset();
         this.overlay.classList.add('hidden');
@@ -161,9 +182,12 @@ class Game {
         // Update player
         this.player.update(dt);
         
-        // Track time above 5000 RPM
-        if (this.player.rpm > 5000) {
-            this.timeAbove5000Rpm += dt;
+        // Track race time
+        this.raceTime += dt;
+        
+        // Track time above 3500 RPM
+        if (this.player.rpm > 3500) {
+            this.timeAbove3500Rpm += dt;
         }
         
         // Track hard braking (brake amount > 70%)
@@ -173,20 +197,21 @@ class Game {
         }
         this.wasHardBraking = isHardBraking;
         
-        // Update distance based on speed
+        // Update distance based on speed (with game speed multiplier for more fun)
         // speed is in km/h, we need to convert to km per frame
-        const speedInKmPerMs = this.player.speed / 3600000; // km/h to km/ms
+        const gameSpeed = this.player.speed * GAME_CONFIG.GAME_SPEED_MULTIPLIER;
+        const speedInKmPerMs = gameSpeed / 3600000; // km/h to km/ms
         this.distanceTraveled += speedInKmPerMs * dt;
         
-        // Update road animation
-        const roadSpeed = (this.player.speed / 3.6) * 0.5; // Convert to pixels
+        // Update road animation (uses game speed for visual effect)
+        const roadSpeed = (gameSpeed / 3.6) * 0.5; // Convert to pixels
         this.roadOffset += roadSpeed * (dt / 16.67);
         if (this.roadOffset > GAME_CONFIG.LANE_LINE_HEIGHT + GAME_CONFIG.LANE_LINE_GAP) {
             this.roadOffset = 0;
         }
         
-        // Update obstacles
-        this.obstacleManager.update(this.player.speed, dt, this.currentTime, this.distanceTraveled);
+        // Update obstacles (uses game speed for faster obstacle movement)
+        this.obstacleManager.update(gameSpeed, dt, this.currentTime, this.distanceTraveled);
         
         // Update crash cooldown
         if (this.crashCooldown > 0) {

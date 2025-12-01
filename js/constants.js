@@ -24,7 +24,7 @@ const GAME_CONFIG = {
     LANE_CHANGE_SPEED: 8,   // pixels per frame
     
     // RPM
-    MAX_RPM: 8000,
+    MAX_RPM: 5500,
     IDLE_RPM: 800,
     
     // Obstacles
@@ -35,8 +35,9 @@ const GAME_CONFIG = {
     OBSTACLE_SPAWN_VARIANCE: 500,  // ms variance
     
     // Game
-    TARGET_DISTANCE: 5,     // km
+    TARGET_DISTANCE: 3.5,     // km
     PIXELS_PER_KM: 50000,   // conversion factor
+    GAME_SPEED_MULTIPLIER: 2.0, // Makes the game world move faster (visual speed boost)
     
     // Colors
     COLORS: {
