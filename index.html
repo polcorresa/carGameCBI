@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highway Racer</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="hud">
+            <div class="hud-item">
+                <span class="hud-label">SPEED</span>
+                <span id="speed-value" class="hud-value">0</span>
+                <span class="hud-unit">km/h</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">RPM</span>
+                <span id="rpm-value" class="hud-value">0</span>
+                <div id="rpm-bar" class="bar-container">
+                    <div id="rpm-fill" class="bar-fill"></div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">BRAKE</span>
+                <div id="brake-bar" class="bar-container">
+                    <div id="brake-fill" class="bar-fill brake"></div>
+                </div>
+            </div>
+            <div class="hud-item distance">
+                <span class="hud-label">DISTANCE</span>
+                <span id="distance-value" class="hud-value">0.00</span>
+                <span class="hud-unit">/ <span id="target-distance">5</span> km</span>
+            </div>
+            <div class="hud-item crashes">
+                <span class="hud-label">CRASHES</span>
+                <span id="crash-value" class="hud-value">0</span>
+            </div>
+        </div>
+        <div id="game-overlay" class="hidden">
+            <div id="overlay-content">
+                <h1 id="overlay-title">Highway Racer</h1>
+                <p id="overlay-message">Avoid traffic and reach the target distance!</p>
+                <p class="controls-info">Controls: ← → to change lanes | ↑ Accelerate | ↓ Brake</p>
+                <button id="start-btn">START</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/constants.js"></script>
+    <script src="js/car.js"></script>
+    <script src="js/obstacle.js"></script>
+    <script src="js/collision.js"></script>
+    <script src="js/controls.js"></script>
+    <script src="js/hud.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

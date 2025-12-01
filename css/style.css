@@ -1,0 +1,181 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#gameCanvas {
+    border: 4px solid #16213e;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+}
+
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    pointer-events: none;
+}
+
+.hud-item {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 2px solid #00d4ff;
+    min-width: 120px;
+    text-align: center;
+}
+
+.hud-item.distance {
+    background: rgba(0, 100, 0, 0.7);
+    border-color: #00ff00;
+}
+
+.hud-item.crashes {
+    background: rgba(100, 0, 0, 0.7);
+    border-color: #ff4444;
+}
+
+.hud-item.crashes .hud-value {
+    color: #ff4444;
+}
+
+.hud-label {
+    display: block;
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.hud-value {
+    display: block;
+    color: #00d4ff;
+    font-size: 28px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.hud-item.distance .hud-value {
+    color: #00ff00;
+}
+
+.hud-unit {
+    color: #666;
+    font-size: 14px;
+}
+
+.bar-container {
+    width: 100%;
+    height: 12px;
+    background: #333;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #00ff88);
+    width: 0%;
+    transition: width 0.1s ease;
+    border-radius: 6px;
+}
+
+.bar-fill.brake {
+    background: linear-gradient(90deg, #ff6b6b, #ff0000);
+}
+
+#game-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+}
+
+#game-overlay.hidden {
+    display: none;
+}
+
+#overlay-content {
+    text-align: center;
+    color: white;
+}
+
+#overlay-title {
+    font-size: 48px;
+    color: #00d4ff;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+#overlay-message {
+    font-size: 18px;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.controls-info {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+#start-btn {
+    padding: 15px 50px;
+    font-size: 24px;
+    background: linear-gradient(135deg, #00d4ff, #00ff88);
+    border: none;
+    border-radius: 8px;
+    color: #1a1a2e;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+}
+
+#start-btn:active {
+    transform: scale(0.98);
+}
+
+/* Win state */
+.win #overlay-title {
+    color: #00ff00;
+}
+
+/* Lose state */
+.lose #overlay-title {
+    color: #ff0000;
+}
