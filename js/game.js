@@ -28,6 +28,7 @@ class Game {
         this.hardBrakeCount = 0; // Number of hard brakes
         this.wasHardBraking = false; // Track if currently hard braking
         this.raceTime = 0; // Total race time in ms
+        this.highSpeedCrashCount = 0; // Crashes above 180 km/h
         
         // Timing
         this.lastTime = 0;
@@ -37,11 +38,17 @@ class Game {
         this.prevLeft = false;
         this.prevRight = false;
         
+        // Player info
+        this.playerName = '';
+        this.leaderboard = new Leaderboard();
+        
         // UI Elements
         this.overlay = document.getElementById('game-overlay');
         this.overlayTitle = document.getElementById('overlay-title');
         this.overlayMessage = document.getElementById('overlay-message');
         this.startBtn = document.getElementById('start-btn');
+        this.nameInput = document.getElementById('player-name');
+        this.nameInputSection = document.getElementById('name-input-section');
         
         this.setupEventListeners();
         this.showMenu();
@@ -52,15 +59,16 @@ class Game {
     
     setupEventListeners() {
         this.startBtn.addEventListener('click', () => {
-            if (this.gameState === 'menu' || this.gameState === 'gameover' || this.gameState === 'win') {
+            if (this.gameState === 'menu') {
                 this.startGame();
+            } else if (this.gameState === 'win' || this.gameState === 'gameover') {
+                this.showMenu();
             }
         });
         
-        // Also allow Enter/Space to start
+        // Also allow Enter/Space to start (only from menu)
         window.addEventListener('keydown', (e) => {
-            if ((e.code === 'Enter' || e.code === 'Space') && 
-                (this.gameState === 'menu' || this.gameState === 'gameover' || this.gameState === 'win')) {
+            if ((e.code === 'Enter' || e.code === 'Space') && this.gameState === 'menu') {
                 this.startGame();
             }
         });
@@ -71,6 +79,9 @@ class Game {
         this.overlayTitle.textContent = 'Highway Racer';
         this.overlayMessage.textContent = 'Avoid traffic and reach the target distance!';
         this.startBtn.textContent = 'START';
+        this.nameInputSection.style.display = 'block';
+        this.nameInput.value = '';
+        this.leaderboard.render();
     }
     
     showGameOver() {
@@ -98,14 +109,21 @@ class Game {
         // RPM penalty: -5 points per second above 3500 RPM
         const rpmPenalty = Math.round(timeAbove3500Seconds * 5);
         
-        // Crash penalty: -250 points per crash
-        const crashPenalty = this.crashCount * 250;
+        // Crash penalty: -250 points per crash, plus -1000 extra for high-speed crashes (>180 km/h)
+        const crashPenalty = (this.crashCount * 250) + (this.highSpeedCrashCount * 1000);
         
         // Hard brake penalty: -30 points per hard brake
         const hardBrakePenalty = this.hardBrakeCount * 30;
         
         // Final score (minimum 0)
         const finalScore = Math.max(0, baseScore - rpmPenalty - crashPenalty - hardBrakePenalty);
+        
+        // Add to leaderboard
+        const rank = this.leaderboard.addScore(this.playerName, finalScore, raceTimeSeconds);
+        this.leaderboard.render();
+        
+        // Hide name input on results screen
+        this.nameInputSection.style.display = 'none';
         
         this.overlayMessage.innerHTML = `
             <strong>Time:</strong> ${raceTimeSeconds.toFixed(1)}s<br><br>
@@ -116,10 +134,25 @@ class Game {
             Hard brake penalty (${this.hardBrakeCount} brakes): -${hardBrakePenalty} pts<br><br>
             <strong style="font-size: 24px; color: #00ff00;">FINAL SCORE: ${finalScore}</strong>
         `;
-        this.startBtn.textContent = 'PLAY AGAIN';
+        this.startBtn.textContent = 'HOME';
+        
+        // Hide name input on results screen (will show on home screen)
+        this.nameInputSection.style.display = 'none';
     }
     
     startGame() {
+        // Get player name
+        this.playerName = this.nameInput.value.trim() || 'Anonymous';
+        
+        // Secret code to reset leaderboard
+        if (this.playerName === 'RESET1234') {
+            this.leaderboard.clearScores();
+            this.leaderboard.render();
+            this.nameInput.value = '';
+            alert('Leaderboard has been reset!');
+            return; // Don't start the game
+        }
+        
         this.gameState = 'playing';
         this.distanceTraveled = 0;
         this.roadOffset = 0;
@@ -131,6 +164,7 @@ class Game {
         this.hardBrakeCount = 0;
         this.wasHardBraking = false;
         this.raceTime = 0;
+        this.highSpeedCrashCount = 0;
         this.player.reset();
         this.obstacleManager.reset();
         this.overlay.classList.add('hidden');
@@ -222,6 +256,10 @@ class Game {
         const collision = CollisionDetector.checkPlayerCollision(this.player, this.obstacleManager);
         if (collision.collided && this.crashCooldown <= 0) {
             this.crashCount++;
+            // Track high-speed crashes (above 180 km/h)
+            if (this.player.speed > 180) {
+                this.highSpeedCrashCount++;
+            }
             this.crashCooldown = 1000; // 1 second cooldown before next crash can count
             // Remove the obstacle that was hit
             const index = this.obstacleManager.obstacles.indexOf(collision.obstacle);
