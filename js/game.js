@@ -75,6 +75,7 @@ class Game {
     }
     
     showMenu() {
+        this.gameState = 'menu';
         this.overlay.classList.remove('hidden', 'win', 'lose');
         this.overlayTitle.textContent = 'Highway Racer';
         this.overlayMessage.textContent = 'Avoid traffic and reach the target distance!';
